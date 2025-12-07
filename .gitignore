@@ -1,0 +1,25 @@
+# 虚拟环境 & 缓存
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+
+# Streamlit/本地配置
+.streamlit/
+.env
+.env.*
+
+# 数据与向量库
+data/docs/
+data/vector_store/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 其他文件
+.idea/
+models/
