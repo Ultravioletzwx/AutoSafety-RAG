@@ -2,13 +2,23 @@
 
 本地法规 RAG 问答（Windows 11 + 单张 A4000 16GB）。
 
+### v0.2 功能更新
+- **数据一致性**：Chroma 作为单一事实来源，启动时自动同步已索引文件列表，无需手动刷新。
+- **上传去重与状态管理**：
+  - 自动拦截已索引或已在队列中的同名文件。
+  - 用户撤销上传时，实时清空待处理队列，修正页数统计问题。
+  - 侧边栏实时展示「当前库文档数」与「待构建索引文档数」。
+- **增量构建**：仅处理本次新增的有效文档，构建成功后自动合并索引并重置队列。
+- **日志系统**：运行日志自动写入 `logs/app.log`，方便问题排查。
+
 ### 目录结构
-- `app.py`：Streamlit 入口。
-- `rag_engine.py`：LlamaIndex 混合检索封装（BM25 + 向量）。
-- `utils.py`：上传、PDF/PPTX 解析为 Markdown。
-- `config.py`：路径与模型配置。
-- `data/docs/`：文件夹1，存放上传的法规 PDF/PPTX。
-- `data/vector_store/`：文件夹2，存放 Chroma 向量化数据。
+- `app.py`：Streamlit 主入口（含会话状态管理）。
+- `rag_engine.py`：RAG 核心引擎（Chroma 连接、混合检索、元数据管理）。
+- `utils.py`：PDF/PPTX 解析与 Markdown 转换。
+- `config.py`：环境配置与日志初始化。
+- `data/docs/`：原始法规文件存档。
+- `data/vector_store/`：Chroma 向量数据库持久化目录。
+- `logs/`：运行时日志文件。
 
 ### 环境安装
 ```bash
