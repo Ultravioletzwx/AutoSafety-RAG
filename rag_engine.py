@@ -216,14 +216,18 @@ if __name__ == "__main__":
     from utils import file_to_documents
 
     config.ensure_dirs()
-    sample = config.UPLOAD_DIR / "sample.pdf"
+    sample = config.UPLOAD_DIR / "附录F  儿童保护静态评价规程.pdf"
     if sample.exists():
         docs = file_to_documents(sample)
-        build_or_refresh_index(docs)
-        engine = as_query_engine(docs)
-        ans = engine.query("这份文档主要讲什么？")
-        print(ans)
-        print("sources:", extract_sources(ans))
+        for idx, doc in enumerate(docs):
+            if idx == 4:
+                print(f'{idx+1}. {doc}')
+                print(f'--------------------------------')
+        # build_or_refresh_index(docs)
+        # engine = as_query_engine(docs)
+        # ans = engine.query("这份文档主要讲什么？")
+        # print(ans)
+        # print("sources:", extract_sources(ans))
     else:
         print("请放置 sample.pdf 到 storage/uploads 后重试。")
 

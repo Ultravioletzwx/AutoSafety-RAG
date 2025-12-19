@@ -1,10 +1,14 @@
 """
 实用函数：上传保存、文本清洗、PDF/PPTX 转 Markdown。
+
 依赖：
     pip install streamlit pymupdf python-pptx
+    # 新增依赖
+    pip install transformers torch pdf2image pillow markdown-it-py beautifulsoup4
 """
 from pathlib import Path
 from typing import List
+import tempfile
 
 import fitz  # PyMuPDF
 from pptx import Presentation
@@ -12,6 +16,9 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 from llama_index.core import Document
 
 import config
+# 导入新模块
+from engines.ocr_by_vlm.local_parser  import parse_pdf_to_markdown
+from md_processor import process_markdown
 
 
 def save_uploaded_file(uploaded_file: UploadedFile, upload_dir: Path) -> Path:
@@ -29,19 +36,38 @@ def clean_text(text: str) -> str:
 
 
 def pdf_to_documents(file_path: Path) -> List[Document]:
-    """将 PDF 转为按页切分的 Document 列表，附带页码元数据。"""
-    docs: List[Document] = []
-    with fitz.open(file_path) as pdf:
-        for page_idx, page in enumerate(pdf, start=1):
-            text = page.get_text("text")
-            markdown = f"# 第 {page_idx} 页\n\n{clean_text(text)}"
-            docs.append(
-                Document(
-                    text=markdown,
-                    metadata={"file_name": file_path.name, "page_number": page_idx},
-                )
-            )
-    return docs
+    """将 PDF 转为结构化的 Document 列表，使用 MinerU 2.5 模型进行解析。"""
+    # 创建临时输出目录
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        try:
+            # 1. 使用 MinerU 2.5 将 PDF 转换为 Markdown
+            md_path = parse_pdf_to_markdown(str(file_path), tmp_dir)
+            
+            # 2. 处理 Markdown 生成结构化的 Document 对象
+            docs = process_markdown(md_path)
+            
+            # 3. 添加文件名元数据
+            for doc in docs:
+                if "file_name" not in doc.metadata:
+                    doc.metadata["file_name"] = file_path.name
+            
+            return docs
+        except Exception as e:
+            print(f"PDF解析失败: {e}")
+            # 回退到传统解析方式
+            print("正在使用传统方式解析...")
+            docs: List[Document] = []
+            with fitz.open(file_path) as pdf:
+                for page_idx, page in enumerate(pdf, start=1):
+                    text = page.get_text("text")
+                    markdown = f"# 第 {page_idx} 页\n\n{clean_text(text)}"
+                    docs.append(
+                        Document(
+                            text=markdown,
+                            metadata={"file_name": file_path.name, "page_number": page_idx},
+                        )
+                    )
+            return docs
 
 
 def pptx_to_documents(file_path: Path) -> List[Document]:

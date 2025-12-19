@@ -16,6 +16,7 @@ CHROMA_PATH = DATA_DIR / "vector_store"  # 文件夹2：向量库持久化
 LOG_DIR = BASE_DIR / "logs"
 LOG_FILE = LOG_DIR / "app.log"
 MODEL_DIR = BASE_DIR / "models" / "bge-m3"
+MODEL_DIR_OCR = BASE_DIR / "models" / "MinerU25"
 
 @dataclass
 class ModelConfig:
@@ -26,6 +27,8 @@ class ModelConfig:
     embedding_model_name: str = str(MODEL_DIR)
     embedding_device: str = "cuda"  # Windows 下若显存紧张，可设为 "cpu"
     embedding_batch_size: int = 16
+    # MinerU 2.5 模型配置
+    mineru_model_path: str = str(MODEL_DIR_OCR)
 
 
 model_config = ModelConfig()
